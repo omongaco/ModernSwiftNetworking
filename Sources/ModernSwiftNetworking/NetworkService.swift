@@ -41,7 +41,6 @@ public struct NetworkService: @unchecked Sendable {
                 urlRequest.url = URL(string: "\(target.baseURL.appendingPathComponent(target.path))?\(queryParams)")
             case .json:
                 urlRequest.httpBody = try? JSONSerialization.data(withJSONObject: parameters, options: [])
-                urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
             }
         }
         
