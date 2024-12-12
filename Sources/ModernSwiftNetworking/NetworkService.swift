@@ -21,7 +21,19 @@ public struct NetworkService: @unchecked Sendable {
                 }
                 return data
             }
-            .decode(type: T.self, decoder: JSONDecoder())
+            .flatMap { data -> AnyPublisher<T, Error> in
+                // Check if the decodingType is Data itself
+                if decodingType == Data.self, let castedData = data as? T {
+                    return Just(castedData)
+                        .setFailureType(to: Error.self)
+                        .eraseToAnyPublisher()
+                }
+
+                // Otherwise, decode normally
+                return Just(data)
+                    .decode(type: T.self, decoder: JSONDecoder())
+                    .eraseToAnyPublisher()
+            }
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
