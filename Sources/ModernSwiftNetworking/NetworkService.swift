@@ -25,7 +25,7 @@ public struct NetworkService: @unchecked Sendable {
                 // Handle empty response with EmptyResponse
                 if data.isEmpty {
                     // Attempt to return an empty instance of T if possible
-                    if let emptyInstance = (T.self as? ExpressibleByNilLiteral.Type)?.init(nilLiteral: ()) as? T {
+                    if let emptyInstance = try? JSONDecoder().decode(T.self, from: "{}".data(using: .utf8)!) {
                         return Just(emptyInstance)
                             .setFailureType(to: Error.self)
                             .eraseToAnyPublisher()
