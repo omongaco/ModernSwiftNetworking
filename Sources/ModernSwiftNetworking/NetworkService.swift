@@ -24,15 +24,16 @@ public struct NetworkService: @unchecked Sendable {
             .flatMap { data -> AnyPublisher<T, Error> in
                 // Handle empty response with EmptyResponse
                 if data.isEmpty {
-                    // Try to create an empty instance of the decoding type if it conforms to Decodable
-                    if let emptyInstance = try? JSONDecoder().decode(T.self, from: Data()) {
+                    // Attempt to return an empty instance of T if possible
+                    if let emptyInstance = (T.self as? ExpressibleByNilLiteral.Type)?.init(nilLiteral: ()) as? T {
                         return Just(emptyInstance)
                             .setFailureType(to: Error.self)
                             .eraseToAnyPublisher()
-                    } else {
-                        return Fail(error: URLError(.cannotDecodeRawData))
-                            .eraseToAnyPublisher()
                     }
+                    
+                    // Otherwise, throw an error or handle it gracefully
+                    return Fail(error: URLError(.cannotDecodeRawData))
+                        .eraseToAnyPublisher()
                 }
                 
                 // Check if the decodingType is Data itself
